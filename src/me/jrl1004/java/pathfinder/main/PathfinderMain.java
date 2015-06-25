@@ -7,7 +7,6 @@ import java.util.Set;
 import me.jrl1004.java.pathfinder.JPath2;
 import me.jrl1004.java.pathfinder.JPathfinder;
 import me.jrl1004.java.pathfinder.silverfish.SilverfishTracker;
-import me.jrl1004.java.pathfinder.swarm.SwarmManager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -19,7 +18,6 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.bukkit.scheduler.BukkitRunnable;
 
 public class PathfinderMain extends JavaPlugin {
 
@@ -30,9 +28,9 @@ public class PathfinderMain extends JavaPlugin {
     public static final List<Material> safeBlocks = Arrays.asList(Material.AIR, Material.LONG_GRASS, Material.DOUBLE_PLANT, Material.WATER, Material.YELLOW_FLOWER, Material.RED_ROSE, Material.BROWN_MUSHROOM, Material.RED_MUSHROOM);
 
     public void onEnable() {
-        instance = this; 
+        instance = this;
         Bukkit.getPluginManager().registerEvents(new SilverfishTracker(), this);
-        Bukkit.getPluginManager().registerEvents(new SwarmManager(), this);
+        // Bukkit.getPluginManager().registerEvents(new SwarmManager(), this);
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -58,21 +56,13 @@ public class PathfinderMain extends JavaPlugin {
             b = l1.getBlock();
         } //
         final Block b2 = b;
-        new BukkitRunnable(){
-            public void run() {
-                JPathfinder p = new JPathfinder(pl.getLocation().getBlock().getLocation(), b2.getLocation());
-            
-                JPath2 path = p.getPath();
-            
-                final Location[] locations = path.getLocations();
-                new BukkitRunnable(){
-                    public void run() {
-                    for (int i = 0; i < locations.length; i++)
-                        locations[i].getBlock().setType(Material.SPONGE);
-                    }
-                }.runTask(PathfinderMain.instance);
-            }
-        }.runTaskAsynchronously(this);
+        JPathfinder p = new JPathfinder(pl.getLocation().getBlock().getLocation(), b2.getLocation());
+
+        JPath2 path = p.getPath();
+
+        final Location[] locations = path.getLocations();
+        for (int i = 0; i < locations.length; i++)
+            locations[i].getBlock().setType(Material.SPONGE);
         return false;
     }
 }
