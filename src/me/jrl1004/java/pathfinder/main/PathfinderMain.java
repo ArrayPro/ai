@@ -4,8 +4,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Set;
 
-import me.jrl1004.java.pathfinder.Path;
-import me.jrl1004.java.pathfinder.Pathfinder;
+import me.jrl1004.java.pathfinder.JPath;
+import me.jrl1004.java.pathfinder.JPathfinder;
 import me.jrl1004.java.pathfinder.silverfish.SilverfishTracker;
 
 import org.bukkit.Bukkit;
@@ -55,9 +55,9 @@ public class PathfinderMain extends JavaPlugin {
             l1.setZ(Integer.parseInt(args[2]));
             b = l1.getBlock();
         } //
-        Pathfinder p = new Pathfinder(pl.getLocation().getBlock().getLocation(), b.getLocation());
+        JPathfinder p = new JPathfinder(pl.getLocation().getBlock().getLocation(), b.getLocation());
 
-        Path path = p.getPath();
+        JPath path = p.getPath();
 
         Location[] locations = path.getPathLocations();
         for (int i = 0; i < locations.length; i++)
