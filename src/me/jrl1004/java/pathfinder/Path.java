@@ -71,7 +71,7 @@ public class Path {
 		if (!isIntercepted()) {
 			nextPath = new Path(localEnd, endLoc, getReverse(), recursion + 1, master == null ? this : master);
 		} else {
-			nextPath = calculateWorkaroundAsynchronously(localEnd, endLoc);
+			calculateWorkaroundAsynchronously(localEnd, endLoc);
 		}
 	}
 
@@ -177,37 +177,48 @@ public class Path {
 		}
 	}
 
-	private synchronized Path calculateWorkaroundAsynchronously(Location start, Location end) {
+	private synchronized void calculateWorkaroundAsynchronously(Location start, Location end) {
 		if (master != null)
 			if (master.terminate)
-				return null;
+				return;
 		final List<Path> paths = new ArrayList<Path>();
-		List<BlockFace> dir = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
-		dir.remove(lastDirection);
 		final Path me = this;
-		for (final BlockFace b : dir) {
-			if (localEnd.getBlock().getRelative(b).getType() == Material.AIR)
-				new BukkitRunnable() {
-					public void run() {
-						paths.add(new Path(localEnd.getBlock().getRelative(b).getLocation(), endLoc, lastDirection, recursion + 1, master == null ? me : master));
-					}
-				}.runTaskAsynchronously(PathfinderMain.instance);
-		}
-		Path path = null;
-		int moves = Integer.MAX_VALUE;
 		System.out.println(paths.size());
-		if (paths.isEmpty()) {
-			return path;
-		}
-		for (Path p : paths) {
-			if (p.isBlocked())
-				continue;
-			int mvs = p.getPathLocations().length;
-			if (mvs < moves) {
-				moves = mvs;
-				path = p;
+		final List<BlockFace> dir = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
+		dir.remove(lastDirection);
+
+		new BukkitRunnable() {
+			public void run() {
+				for (final BlockFace b : dir) {
+					if (localEnd.getBlock().getRelative(b).getType() == Material.AIR)
+						paths.add(new Path(localEnd.getBlock().getRelative(b).getLocation(), endLoc, lastDirection, recursion + 1, master == null ? me : master));
+				}
 			}
-		}
-		return path;
+		}.runTaskAsynchronously(PathfinderMain.instance);
+
+		new BukkitRunnable() {
+			int		moves	= Integer.MAX_VALUE;
+			Path	active	= null;
+			int		recur	= 0;
+
+			public void run() {
+				if (paths.isEmpty()) {
+					return;
+				}
+				for (Path p : paths) {
+					if (p.isBlocked())
+						continue;
+					int mvs = p.getPathLocations().length;
+					if (mvs < moves) {
+						moves = mvs;
+						active = p;
+					}
+					if (recur >= 10) {
+						me.nextPath = active;
+						cancel();
+					}
+				}
+			}
+		}.runTaskTimer(PathfinderMain.instance, 0, 20);
 	}
 }
