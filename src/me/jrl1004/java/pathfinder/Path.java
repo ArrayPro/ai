@@ -46,7 +46,13 @@ public class Path {
 		}
 		System.out.println("Local ending at " + localEnd);
 		if (!localEnd.equals(end) && !isBlocked())
-			nextPath = new Path(localEnd, end, getReverse());
+			try {
+				nextPath = new Path(localEnd, end, getReverse());
+			} catch (Exception exc) {
+				nextPath = null;
+				System.out.println(exc.getMessage());
+				exc.printStackTrace();
+			}
 	}
 
 	private TreeMap<BlockFace, Integer> getDirectionsByLength() {
