@@ -1,15 +1,17 @@
 package me.jrl1004.java.pathfinder;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Stack;
+import java.util.TreeMap;
+
+import me.jrl1004.java.pathfinder.utils.local.vector.VectorUtil;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
-
-import java.util.Arrays;
-import java.util.List;
-import java.util.Stack;
-import java.util.TreeMap;
 
 public class Pathfinder {
 
@@ -24,23 +26,26 @@ public class Pathfinder {
         return directions;
     }
 
-    protected class Path {
-        private BlockFace direction;
-        private List<BlockFace> blocked;
-        private int moves;
+    public class Path {
+        public BlockFace direction;
+        public int moves;
+        private ArrayList<BlockFace> blocked;
         private Location startLoc;
         private Vector start, end, localEnd;
 
         Path(Location startLoc, Vector end, BlockFace... blockedPaths) {
-            direction = null;
-            moves = Integer.MAX_VALUE;
+            direction = BlockFace.SELF;
+            moves = (int) Math.ceil(end.distance(startLoc.toVector()));
             this.startLoc = startLoc;
             this.start = startLoc.toVector();
             this.end = end;
-            blocked = Arrays.asList(blockedPaths);
+            if (blockedPaths.length > 0)
+                blocked = new ArrayList<BlockFace>(Arrays.asList(blockedPaths));
+            else
+                blocked = new ArrayList<BlockFace>();
             TreeMap<BlockFace, Integer> paths = getDirectionsByLength();
             for (BlockFace b : paths.keySet()) {
-                if (direction != null) continue;
+                if (direction != BlockFace.SELF) continue;
                 if (blocked.contains(b)) continue;
                 if (paths.get(b) < moves) {
                     moves = paths.get(b);
@@ -56,7 +61,7 @@ public class Pathfinder {
 
             localEnd = block.getLocation().toVector();
 
-            if (!localEnd.equals(end))
+            if (!VectorUtil.equals(localEnd, end))
                 directions.push(new Path(localEnd.toLocation(startLoc.getWorld()), end, blocked.toArray(new BlockFace[blocked.size()])));
         }
 

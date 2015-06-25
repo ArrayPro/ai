@@ -1,0 +1,6 @@
+main: me.jrl1004.java.pathfinder.main.PathfinderMain
+version: 1.0.0
+name: Pathfinder
+author: Justin O'Boyle & Jacob Ryan
+commands:
+    pathtest: 
