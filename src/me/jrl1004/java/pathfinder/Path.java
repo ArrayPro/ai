@@ -77,7 +77,7 @@ public class Path {
 		boolean run = true;
 		while (run) {
 			b = b.getRelative(blockface);
-			if (b.getType() != Material.AIR || max >= 25) {
+			if (b.getType() != Material.AIR || moves >= max) {
 				run = false;
 			} else {
 				moves++;
