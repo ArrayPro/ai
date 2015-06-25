@@ -114,7 +114,7 @@ public class JPath2 extends Thread {
     public Location[] getLocations(boolean useChildren) {
         ArrayList<Location> locations = new ArrayList<Location>();
         for (int i = 0; i < magnitude; i++) {
-            locations.add(start.add(direction.multiply(magnitude)));
+            locations.add(start.add(direction.clone().multiply(magnitude)));
         }
         if (nextPath != null && useChildren)
             locations.addAll(Arrays.asList(nextPath.getLocations()));
