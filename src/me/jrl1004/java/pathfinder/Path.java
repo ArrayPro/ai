@@ -44,13 +44,13 @@ public class Path {
 				block = block.getRelative(direction);
 			localEnd = block.getLocation();
 		}
-		System.out.println("Local ending at " + localEnd);
+		// System.out.println("Local ending at " + localEnd);
 		if (!localEnd.equals(end) && !isBlocked())
 			try {
 				nextPath = new Path(localEnd, end, getReverse());
 			} catch (Exception exc) {
 				nextPath = null;
-				System.out.println(exc.getMessage());
+				// System.out.println(exc.getMessage());
 				exc.printStackTrace();
 			}
 	}
@@ -68,7 +68,7 @@ public class Path {
 		int zDist = Math.abs(end.getBlockZ() - start.getBlockZ());
 		zDist = getPathableDistance(zFace, zDist);
 
-		System.out.println("----------------------------------");
+		// System.out.println("----------------------------------");
 
 		TreeMap<BlockFace, Integer> pathing = new TreeMap<BlockFace, Integer>();
 		pathing.put(xFace, xDist);
@@ -78,7 +78,7 @@ public class Path {
 	}
 
 	private int getPathableDistance(BlockFace blockface, int max) {
-		Block b = startLoc.clone().getBlock();
+		Block b = startLoc.getBlock();
 		int moves = 0;
 		boolean run = true;
 		while (run) {
@@ -89,7 +89,7 @@ public class Path {
 				moves++;
 			}
 		}
-		System.out.println(blockface.toString() + " has an availiable path! + (" + moves + " blocks)");
+//		// System.out.println(blockface.toString() + " has an availiable path! + (" + moves + " blocks)");
 		return moves;
 	}
 
