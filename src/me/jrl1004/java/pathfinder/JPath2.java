@@ -9,29 +9,38 @@ import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
-public class JPath2 {
+public class JPath2 extends Thread {
 	private JPath2			nextPath;
 	private final Location	start;
 	private final Location	end;
-	private final Location	localEnd;
+	private Location		localEnd;
+	private final int		recur;
 
 	public JPath2(Location start, Location end, int recur) {
 		// Initialize
 		nextPath = null;
 		this.start = start;
 		this.end = end;
+		this.recur = recur;
 		if (!start.getWorld().equals(end.getWorld())) {
 			localEnd = start;
 			return; // We cannot path between dimensions
 		}
+	}
+
+	@Override
+	public void start() {
 
 		generateCurrentPath();
 		countBlocksAlongPath();
+
+		System.out.println("Path made with a magnitude of " + magnitude + " along the path " + direction);
 
 		localEnd = this.start.clone().add(direction.multiply(magnitude));
 
 		if (!atEnd() && recur < PathfinderMain.maxRecursions)
 			nextPath = new JPath2(localEnd, end, recur + 1);
+		super.run();
 	}
 
 	private Vector	direction;	// Which way are we going?
