@@ -17,8 +17,8 @@ public class Path {
 	public BlockFace direction;
 	public int moves;
 	private HashSet<BlockFace> blocked;
-	private Location startLoc;
-	private Vector start, end, localEnd;
+	private final Location startLoc;
+	private final Vector start, end, localEnd;
 	private Path nextPath;
 	private boolean PATH_BLOCKED;
 
@@ -63,14 +63,17 @@ public class Path {
 	}
 
 	private TreeMap<BlockFace, Integer> getDirectionsByLength() {
-		BlockFace xFace = (end.getBlockX() - start.getX() >= 0 ? BlockFace.EAST : BlockFace.WEST);
-		int xDist = getPathableDistance(xFace);
+		BlockFace xFace = (end.getBlockX() - start.getBlockX() >= 0 ? BlockFace.EAST : BlockFace.WEST);
+		int xDist = Math.abs(end.getBlockX() - start.getBlockX());
+		xDist = getPathableDistance(xFace, xDist);
 
-		BlockFace yFace = (end.getBlockY() - start.getY() >= 0 ? BlockFace.UP : BlockFace.DOWN);
-		int yDist = getPathableDistance(yFace);
+		BlockFace yFace = (end.getBlockY() - start.getBlockY() >= 0 ? BlockFace.UP : BlockFace.DOWN);
+		int yDist = Math.abs(end.getBlockY() - start.getBlockY());
+		yDist = getPathableDistance(yFace, yDist);
 
-		BlockFace zFace = (end.getBlockZ() - start.getZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
-		int zDist = getPathableDistance(zFace);
+		BlockFace zFace = (end.getBlockZ() - start.getBlockZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
+		int zDist = Math.abs(end.getBlockZ() - start.getBlockZ());
+		zDist = getPathableDistance(zFace, zDist);
 
 		System.out.println("----------------------------------");
 
@@ -81,13 +84,13 @@ public class Path {
 		return pathing;
 	}
 
-	private int getPathableDistance(BlockFace blockface) {
-		Block b = startLoc.getBlock();
+	private int getPathableDistance(BlockFace blockface, int max) {
+		Block b = startLoc.clone().getBlock();
 		int moves = 0;
 		boolean run = true;
 		while (run) {
 			b = b.getRelative(blockface);
-			if (b.getType() != Material.AIR) {
+			if (b.getType() != Material.AIR || max >= 25) {
 				run = false;
 			} else {
 				moves++;
