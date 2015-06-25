@@ -68,7 +68,7 @@ public class Path {
 				master.terminate = true;
 			return;
 		}
-		if (!isIntercepted()) {
+		if (isIntercepted()) {
 			nextPath = new Path(localEnd, endLoc, getReverse(), recursion + 1, master == null ? this : master);
 		} else {
 			calculateWorkaroundAsynchronously(localEnd, endLoc);
@@ -181,7 +181,6 @@ public class Path {
 				return;
 		final List<Path> paths = new ArrayList<Path>();
 		final Path me = this;
-		System.out.println(paths.size());
 		final List<BlockFace> dir = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
 		dir.remove(lastDirection);
 
