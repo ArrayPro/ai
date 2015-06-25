@@ -66,9 +66,7 @@ public class Path {
 		BlockFace zFace = (endLoc.getBlockZ() - startLoc.getBlockZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
 		int zDist = Math.abs(endLoc.getBlockZ() - startLoc.getBlockZ());
 		zDist = getPathableDistance(zFace, zDist);
-
-		System.out.println("----------------------------------");
-
+		
 		TreeMap<Integer, BlockFace> pathing = new TreeMap<Integer, BlockFace>();
 		pathing.put(xDist, xFace);
 		pathing.put(yDist, yFace);
@@ -88,7 +86,6 @@ public class Path {
 				moves++;
 			}
 		}
-		System.out.println(blockface.toString() + " has an availiable path of " + moves + " blocks");
 		return moves;
 	}
 

@@ -41,7 +41,7 @@ public class PathfinderMain extends JavaPlugin {
 
         if (!(sender instanceof Player))
             return false;
-
+        
         Player pl = (Player) sender;
         Block b = pl.getTargetBlock((Set<Material>) null, 500);
         if (args.length >= 3) {
