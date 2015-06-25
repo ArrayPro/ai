@@ -8,7 +8,7 @@ public class Pathfinder {
 	private Path directions;
 
 	public Pathfinder(Location start, Location end) {
-		directions = new Path(start, end.toVector(), BlockFace.SELF);
+		directions = new Path(start, end, BlockFace.SELF, 0);
 	}
 
 	public Path getPath() {

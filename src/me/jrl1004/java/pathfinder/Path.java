@@ -4,39 +4,31 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.TreeMap;
 
+import me.jrl1004.java.pathfinder.main.PathfinderMain;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.util.Vector;
 
 public class Path {
 	public BlockFace direction, lastDirection;
 	public int moves;
-	private final Location startLoc, localEnd;
-	private final Vector start, end;
+	private final Location startLoc, endLoc, localEnd;
 	private Path nextPath;
 
-	Path(Location startLoc, Vector end, BlockFace LastDirection) {
+	Path(Location start, Location end, BlockFace LastDirection, int recursion) {
 		// Initiation
-		direction = BlockFace.SELF;
+		direction = null;
 		moves = Integer.MIN_VALUE;
-		this.startLoc = startLoc;
-		this.start = startLoc.toVector();
-		this.end = end;
+		this.startLoc = start;
+		this.endLoc = end;
 		nextPath = null; // Not needed until we calculate this path
 
 		// Calculations
-		TreeMap<BlockFace, Integer> paths = getDirectionsByLength();
-		for (BlockFace b : paths.keySet()) {
-			if (direction == BlockFace.SELF)
-				continue;
-			if (paths.get(b) > moves) {
-				moves = paths.get(b);
-				direction = b;
-			}
-		}
-
+		TreeMap<Integer, BlockFace> paths = getDirectionsByLength();
+		moves = paths.lastKey();
+		direction = paths.get(moves);
 		// Find the end of the path
 		{
 			Block block = startLoc.getBlock();
@@ -44,36 +36,43 @@ public class Path {
 				block = block.getRelative(direction);
 			localEnd = block.getLocation();
 		}
-		// System.out.println("Local ending at " + localEnd);
-		if (!localEnd.equals(end) && !isBlocked())
-			try {
-				nextPath = new Path(localEnd, end, getReverse());
-			} catch (Exception exc) {
-				nextPath = null;
-				// System.out.println(exc.getMessage());
-				exc.printStackTrace();
-			}
+
+		System.out.println("Path Created from " + startLoc.toVector() + " to " + localEnd.toVector());
+
+		if (recursion >= PathfinderMain.maxRecursions) {
+			System.out.println("Max recursions met");
+			return;
+		}
+		if (isBlocked()) {
+			System.out.println("Path blocked; Terminating after " + recursion + " iterations");
+			return;
+		}
+		if (localEnd.equals(end)) {
+			System.out.println("Destination reached");
+			return;
+		}
+		nextPath = new Path(localEnd, end, getReverse(), recursion + 1);
 	}
 
-	private TreeMap<BlockFace, Integer> getDirectionsByLength() {
-		BlockFace xFace = (end.getBlockX() - start.getBlockX() >= 0 ? BlockFace.EAST : BlockFace.WEST);
-		int xDist = Math.abs(end.getBlockX() - start.getBlockX());
+	private TreeMap<Integer, BlockFace> getDirectionsByLength() {
+		BlockFace xFace = (endLoc.getBlockX() - startLoc.getBlockX() >= 0 ? BlockFace.EAST : BlockFace.WEST);
+		int xDist = Math.abs(endLoc.getBlockX() - startLoc.getBlockX());
 		xDist = getPathableDistance(xFace, xDist);
 
-		BlockFace yFace = (end.getBlockY() - start.getBlockY() >= 0 ? BlockFace.UP : BlockFace.DOWN);
-		int yDist = Math.abs(end.getBlockY() - start.getBlockY());
+		BlockFace yFace = (endLoc.getBlockY() - startLoc.getBlockY() >= 0 ? BlockFace.UP : BlockFace.DOWN);
+		int yDist = Math.abs(endLoc.getBlockY() - startLoc.getBlockY());
 		yDist = getPathableDistance(yFace, yDist);
 
-		BlockFace zFace = (end.getBlockZ() - start.getBlockZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
-		int zDist = Math.abs(end.getBlockZ() - start.getBlockZ());
+		BlockFace zFace = (endLoc.getBlockZ() - startLoc.getBlockZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
+		int zDist = Math.abs(endLoc.getBlockZ() - startLoc.getBlockZ());
 		zDist = getPathableDistance(zFace, zDist);
 
-		// System.out.println("----------------------------------");
+		System.out.println("----------------------------------");
 
-		TreeMap<BlockFace, Integer> pathing = new TreeMap<BlockFace, Integer>();
-		pathing.put(xFace, xDist);
-		pathing.put(yFace, yDist);
-		pathing.put(zFace, zDist);
+		TreeMap<Integer, BlockFace> pathing = new TreeMap<Integer, BlockFace>();
+		pathing.put(xDist, xFace);
+		pathing.put(yDist, yFace);
+		pathing.put(zDist, zFace);
 		return pathing;
 	}
 
@@ -89,7 +88,7 @@ public class Path {
 				moves++;
 			}
 		}
-//		// System.out.println(blockface.toString() + " has an availiable path! + (" + moves + " blocks)");
+		System.out.println(blockface.toString() + " has an availiable path of " + moves + " blocks");
 		return moves;
 	}
 
@@ -106,6 +105,8 @@ public class Path {
 	}
 
 	private boolean isBlocked() {
+		if (moves == 0)
+			return true;
 		int freePaths = 6;
 		Block block = localEnd.getBlock();
 		for (BlockFace b : Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN)) {

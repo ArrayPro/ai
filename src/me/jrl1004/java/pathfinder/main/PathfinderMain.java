@@ -16,19 +16,28 @@ import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class PathfinderMain extends JavaPlugin {
-    
-    public void onEnable(){
-        Bukkit.getPluginManager().registerEvents(new SilverfishTracker(), this);
-    }
+
+	public static final int maxRecursions = 100;
+
+	public void onEnable() {
+		Bukkit.getPluginManager().registerEvents(new SilverfishTracker(), this);
+	}
 
 	public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
 		if (!(sender instanceof Player))
 			return false;
 
 		Player pl = (Player) sender;
-		Block b = pl.getTargetBlock((Set<Material>) null, 100);
-		b.setType(Material.DIAMOND_BLOCK);
-		Pathfinder p = new Pathfinder(pl.getLocation(), b.getLocation());
+		Block b = pl.getTargetBlock((Set<Material>) null, 500);
+		if (args.length >= 3) {
+			Location l1 = pl.getLocation();
+			l1.setX(Integer.parseInt(args[0]));
+			l1.setY(Integer.parseInt(args[1]));
+			l1.setZ(Integer.parseInt(args[2]));
+			b = l1.getBlock();
+		}
+		// b.setType(Material.DIAMOND_BLOCK);
+		Pathfinder p = new Pathfinder(pl.getLocation().getBlock().getLocation(), b.getLocation());
 
 		Path path = p.getPath();
 
