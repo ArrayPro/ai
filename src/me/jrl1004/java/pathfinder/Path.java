@@ -15,6 +15,10 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 public class Path {
 
+	public boolean		terminate	= false;
+
+	private final Path	master;
+
 	public BlockFace	direction, lastDirection;
 	public int			moves;
 
@@ -22,14 +26,21 @@ public class Path {
 	private Path			nextPath;
 	private final int		recursion;
 
-	Path(Location startLoc, Location endLoc, BlockFace LastDirection, int recursion) {
+	Path(Location startLoc, Location endLoc, BlockFace LastDirection, int recursion, Path master) {
 		// Initiation
+		this.master = master;
 		direction = null;
 		moves = Integer.MIN_VALUE;
 		this.startLoc = startLoc;
 		this.endLoc = endLoc;
 		nextPath = null; // Not needed until we calculate this path
 		this.recursion = recursion;
+
+		if (master != null)
+			if (master.terminate) {
+				localEnd = startLoc;
+				return;
+			}
 
 		// Calculations
 		TreeMap<Integer, BlockFace> paths = getDirectionsByLength();
@@ -53,10 +64,12 @@ public class Path {
 		}
 		if (reachesDestination()) {
 			System.out.println("Destination reached");
+			if (master != null)
+				master.terminate = true;
 			return;
 		}
 		if (!isIntercepted()) {
-			nextPath = new Path(localEnd, endLoc, getReverse(), recursion + 1);
+			nextPath = new Path(localEnd, endLoc, getReverse(), recursion + 1, master == null ? this : master);
 		} else {
 			nextPath = calculateWorkaroundAsynchronously(localEnd, endLoc);
 		}
@@ -164,15 +177,19 @@ public class Path {
 		}
 	}
 
-	private Path calculateWorkaroundAsynchronously(Location start, Location end) {
+	private synchronized Path calculateWorkaroundAsynchronously(Location start, Location end) {
+		if (master != null)
+			if (master.terminate)
+				return null;
 		final List<Path> paths = new ArrayList<Path>();
 		List<BlockFace> dir = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
 		dir.remove(lastDirection);
+		final Path me = this;
 		for (final BlockFace b : dir) {
 			if (localEnd.getBlock().getRelative(b).getType() == Material.AIR)
 				new BukkitRunnable() {
 					public void run() {
-						paths.add(new Path(localEnd.getBlock().getRelative(b).getLocation(), endLoc, lastDirection, recursion + 1));
+						paths.add(new Path(localEnd.getBlock().getRelative(b).getLocation(), endLoc, lastDirection, recursion + 1, master == null ? me : master));
 					}
 				}.runTaskAsynchronously(PathfinderMain.instance);
 		}
