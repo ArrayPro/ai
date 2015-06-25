@@ -2,6 +2,7 @@ package me.jrl1004.java.pathfinder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.TreeMap;
 
 import me.jrl1004.java.pathfinder.utils.local.vector.VectorUtil;
@@ -15,7 +16,7 @@ import org.bukkit.util.Vector;
 public class Path {
 	public BlockFace direction;
 	public int moves;
-	private ArrayList<BlockFace> blocked;
+	private HashSet<BlockFace> blocked;
 	private Location startLoc;
 	private Vector start, end, localEnd;
 	private Path nextPath;
@@ -29,9 +30,9 @@ public class Path {
 		this.start = startLoc.toVector();
 		this.end = end;
 		if (blockedPaths.length > 0)
-			blocked = new ArrayList<BlockFace>(Arrays.asList(blockedPaths));
+			blocked = new HashSet<BlockFace>(Arrays.asList(blockedPaths));
 		else
-			blocked = new ArrayList<BlockFace>();
+			blocked = new HashSet<BlockFace>();
 		nextPath = null; // Not needed until we calculate this path
 		PATH_BLOCKED = isBlocked();
 
@@ -56,6 +57,7 @@ public class Path {
 				blocked.add(face);
 		blocked.add(getReverse());
 		localEnd = block.getLocation().toVector();
+		System.out.println("Local ending at " + localEnd);
 		if (!VectorUtil.equals(localEnd, end) && !PATH_BLOCKED)
 			nextPath = new Path(localEnd.toLocation(startLoc.getWorld()), end, blocked.toArray(new BlockFace[blocked.size()]));
 	}
@@ -69,6 +71,8 @@ public class Path {
 
 		BlockFace zFace = (end.getBlockZ() - start.getZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
 		int zDist = getPathableDistance(zFace);
+
+		System.out.println("----------------------------------");
 
 		TreeMap<BlockFace, Integer> pathing = new TreeMap<BlockFace, Integer>();
 		pathing.put(xFace, xDist);
@@ -89,6 +93,7 @@ public class Path {
 				moves++;
 			}
 		}
+		System.out.println(blockface.toString() + " has an availiable path! + (" + moves + " blocks)");
 		return moves;
 	}
 
