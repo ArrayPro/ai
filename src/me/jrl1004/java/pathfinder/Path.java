@@ -2,6 +2,7 @@ package me.jrl1004.java.pathfinder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 import java.util.TreeMap;
 
 import me.jrl1004.java.pathfinder.main.PathfinderMain;
@@ -10,25 +11,31 @@ import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
+import org.bukkit.scheduler.BukkitRunnable;
 
 public class Path {
-	public BlockFace direction, lastDirection;
-	public int moves;
-	private final Location startLoc, endLoc, localEnd;
-	private Path nextPath;
 
-	Path(Location start, Location end, BlockFace LastDirection, int recursion) {
+	public BlockFace	direction, lastDirection;
+	public int			moves;
+
+	private final Location	startLoc, endLoc, localEnd;
+	private Path			nextPath;
+	private final int		recursion;
+
+	Path(Location startLoc, Location endLoc, BlockFace LastDirection, int recursion) {
 		// Initiation
 		direction = null;
 		moves = Integer.MIN_VALUE;
-		this.startLoc = start;
-		this.endLoc = end;
+		this.startLoc = startLoc;
+		this.endLoc = endLoc;
 		nextPath = null; // Not needed until we calculate this path
+		this.recursion = recursion;
 
 		// Calculations
 		TreeMap<Integer, BlockFace> paths = getDirectionsByLength();
 		moves = paths.lastKey();
 		direction = paths.get(moves);
+
 		// Find the end of the path
 		{
 			Block block = startLoc.getBlock();
@@ -36,9 +43,6 @@ public class Path {
 				block = block.getRelative(direction);
 			localEnd = block.getLocation();
 		}
-
-		System.out.println("Path Created from " + startLoc.toVector() + " to " + localEnd.toVector());
-
 		if (recursion >= PathfinderMain.maxRecursions) {
 			System.out.println("Max recursions met");
 			return;
@@ -47,11 +51,23 @@ public class Path {
 			System.out.println("Path blocked; Terminating after " + recursion + " iterations");
 			return;
 		}
-		if (localEnd.equals(end)) {
+		if (reachesDestination()) {
 			System.out.println("Destination reached");
 			return;
 		}
-		nextPath = new Path(localEnd, end, getReverse(), recursion + 1);
+		if (!isIntercepted()) {
+			nextPath = new Path(localEnd, endLoc, getReverse(), recursion + 1);
+		} else {
+			nextPath = calculateWorkaroundAsynchronously(localEnd, endLoc);
+		}
+	}
+
+	public boolean reachesDestination() {
+		if (localEnd == null)
+			return false;
+		if (isBlocked())
+			return false;
+		return localEnd.equals(endLoc);
 	}
 
 	private TreeMap<Integer, BlockFace> getDirectionsByLength() {
@@ -66,7 +82,7 @@ public class Path {
 		BlockFace zFace = (endLoc.getBlockZ() - startLoc.getBlockZ() >= 0 ? BlockFace.SOUTH : BlockFace.NORTH);
 		int zDist = Math.abs(endLoc.getBlockZ() - startLoc.getBlockZ());
 		zDist = getPathableDistance(zFace, zDist);
-		
+
 		TreeMap<Integer, BlockFace> pathing = new TreeMap<Integer, BlockFace>();
 		pathing.put(xDist, xFace);
 		pathing.put(yDist, yFace);
@@ -101,13 +117,29 @@ public class Path {
 		return path.toArray(new Location[path.size()]);
 	}
 
+	private boolean isIntercepted() {
+		if (moves == 0)
+			return true;
+		int freePaths = 5;
+		Block block = localEnd.getBlock();
+		List<BlockFace> arr = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
+		arr.remove(lastDirection);
+		for (BlockFace b : arr) {
+			if (block.getRelative(b).getType() != Material.AIR)
+				freePaths--;
+		}
+		return freePaths > 0;
+	}
+
 	private boolean isBlocked() {
 		if (moves == 0)
 			return true;
-		int freePaths = 6;
+		int freePaths = 5;
 		Block block = localEnd.getBlock();
-		for (BlockFace b : Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN)) {
-			if (block.getRelative(b).getType() != Material.AIR || (b == lastDirection && block.getRelative(b).getType() == Material.AIR))
+		List<BlockFace> arr = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
+		arr.remove(lastDirection);
+		for (BlockFace b : arr) {
+			if (block.getRelative(b).getType() != Material.AIR)
 				freePaths--;
 		}
 		return freePaths == 0;
@@ -130,5 +162,35 @@ public class Path {
 		default:
 			return BlockFace.SELF;
 		}
+	}
+
+	private Path calculateWorkaroundAsynchronously(Location start, Location end) {
+		final List<Path> paths = new ArrayList<Path>();
+		List<BlockFace> dir = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
+		dir.remove(lastDirection);
+		for (final BlockFace b : dir) {
+			if (localEnd.getBlock().getRelative(b).getType() == Material.AIR)
+				new BukkitRunnable() {
+					public void run() {
+						paths.add(new Path(localEnd.getBlock().getRelative(b).getLocation(), endLoc, lastDirection, recursion + 1));
+					}
+				}.runTaskAsynchronously(PathfinderMain.instance);
+		}
+		Path path = null;
+		int moves = Integer.MAX_VALUE;
+		System.out.println(paths.size());
+		if (paths.isEmpty()) {
+			return path;
+		}
+		for (Path p : paths) {
+			if (p.isBlocked())
+				continue;
+			int mvs = p.getPathLocations().length;
+			if (mvs < moves) {
+				moves = mvs;
+				path = p;
+			}
+		}
+		return path;
 	}
 }
