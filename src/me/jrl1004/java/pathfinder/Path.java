@@ -2,10 +2,7 @@ package me.jrl1004.java.pathfinder;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.TreeMap;
-
-import me.jrl1004.java.pathfinder.utils.local.vector.VectorUtil;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -14,52 +11,42 @@ import org.bukkit.block.BlockFace;
 import org.bukkit.util.Vector;
 
 public class Path {
-	public BlockFace direction;
+	public BlockFace direction, lastDirection;
 	public int moves;
-	private HashSet<BlockFace> blocked;
-	private final Location startLoc;
-	private final Vector start, end, localEnd;
+	private final Location startLoc, localEnd;
+	private final Vector start, end;
 	private Path nextPath;
-	private boolean PATH_BLOCKED;
 
-	Path(Location startLoc, Vector end, BlockFace... blockedPaths) {
+	Path(Location startLoc, Vector end, BlockFace LastDirection) {
 		// Initiation
 		direction = BlockFace.SELF;
 		moves = Integer.MIN_VALUE;
 		this.startLoc = startLoc;
 		this.start = startLoc.toVector();
 		this.end = end;
-		if (blockedPaths.length > 0)
-			blocked = new HashSet<BlockFace>(Arrays.asList(blockedPaths));
-		else
-			blocked = new HashSet<BlockFace>();
 		nextPath = null; // Not needed until we calculate this path
-		PATH_BLOCKED = isBlocked();
 
 		// Calculations
 		TreeMap<BlockFace, Integer> paths = getDirectionsByLength();
 		for (BlockFace b : paths.keySet()) {
-			if (direction != BlockFace.SELF)
-				continue;
-			if (blocked.contains(b))
+			if (direction == BlockFace.SELF)
 				continue;
 			if (paths.get(b) > moves) {
 				moves = paths.get(b);
 				direction = b;
 			}
 		}
-		Block block = startLoc.getBlock();
-		for (int i = 0; i < moves; i++)
-			block = block.getRelative(direction);
-		blocked.clear();
-		for (BlockFace face : BlockFace.values())
-			if (block.getRelative(face).getType() != Material.AIR)
-				blocked.add(face);
-		blocked.add(getReverse());
-		localEnd = block.getLocation().toVector();
+
+		// Find the end of the path
+		{
+			Block block = startLoc.getBlock();
+			for (int i = 0; i < moves; i++)
+				block = block.getRelative(direction);
+			localEnd = block.getLocation();
+		}
 		System.out.println("Local ending at " + localEnd);
-		if (!VectorUtil.equals(localEnd, end) && !PATH_BLOCKED)
-			nextPath = new Path(localEnd.toLocation(startLoc.getWorld()), end, blocked.toArray(new BlockFace[blocked.size()]));
+		if (!localEnd.equals(end) && !isBlocked())
+			nextPath = new Path(localEnd, end, getReverse());
 	}
 
 	private TreeMap<BlockFace, Integer> getDirectionsByLength() {
@@ -113,12 +100,13 @@ public class Path {
 	}
 
 	private boolean isBlocked() {
-		boolean bool = false;
+		int freePaths = 6;
+		Block block = localEnd.getBlock();
 		for (BlockFace b : Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN)) {
-			if (blocked.contains(b))
-				bool = true;
+			if (block.getRelative(b).getType() != Material.AIR || (b == lastDirection && block.getRelative(b).getType() == Material.AIR))
+				freePaths--;
 		}
-		return bool;
+		return freePaths == 0;
 	}
 
 	private BlockFace getReverse() {
