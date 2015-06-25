@@ -31,8 +31,6 @@ public class SwarmManager implements Listener {
 
     private static final Random rand = new Random();
 
-    private static final List<String> spawnedByPlugin = new ArrayList<String>();
-
     public SwarmManager() {
         new BukkitRunnable() {
 
