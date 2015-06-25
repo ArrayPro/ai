@@ -19,6 +19,7 @@ import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.v1_8_R2.entity.CraftEntity;
 import org.bukkit.entity.Creature;
 import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
@@ -149,16 +150,27 @@ public class SwarmManager implements Listener {
         return behind;
     }
 
+    private static final EntityType[] blockedMultiply = { EntityType.SQUID, EntityType.BAT };
+
     @EventHandler
     public void onCreatureSpawn(CreatureSpawnEvent e) {
 
-         if (e.getSpawnReason() == SpawnReason.CUSTOM) return;
+        for (EntityType t : blockedMultiply)
+            if (e.getEntity().getType().equals(t))
+                return;
+
+        if (e.getSpawnReason() == SpawnReason.CUSTOM)
+            return;
 
         Location loc = e.getEntity().getLocation();
-        for (int x = -10; x < 10; x++) {
-            for (int z = -10; z < 10; z++) {
+        int spawnedMobs = 0;
+        for (int x = -15; x < 15; x++) {
+            for (int z = -15; z < 15; z++) {
+                if (spawnedMobs > 3)
+                    return;
                 Location l2 = loc.clone().add(x, 0, z);
-                if (rand.nextInt(50) == rand.nextInt(50)) {
+                if (rand.nextInt(160) == rand.nextInt(160)) {
+                    spawnedMobs++;
                     Location l3 = getHighestBlock(l2);
                     Entity en = loc.getWorld().spawnEntity(l3, e.getEntity().getType());
                 }
