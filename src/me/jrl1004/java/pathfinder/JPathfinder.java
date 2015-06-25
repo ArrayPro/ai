@@ -7,7 +7,7 @@ public class JPathfinder {
 	private JPath2	directions;
 
 	public JPathfinder(Location start, Location end) {
-		directions = new JPath2(start, end);
+		directions = new JPath2(start, end, 0);
 	}
 
 	public JPath2 getPath() {

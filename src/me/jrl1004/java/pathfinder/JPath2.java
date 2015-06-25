@@ -15,7 +15,7 @@ public class JPath2 {
 	private final Location	end;
 	private final Location	localEnd;
 
-	public JPath2(Location start, Location end) {
+	public JPath2(Location start, Location end, int recur) {
 		// Initialize
 		nextPath = null;
 		this.start = start;
@@ -30,8 +30,8 @@ public class JPath2 {
 
 		localEnd = this.start.clone().add(direction.multiply(magnitude));
 
-		if (!atEnd())
-			nextPath = new JPath2(localEnd, end);
+		if (!atEnd() && recur < PathfinderMain.maxRecursions)
+			nextPath = new JPath2(localEnd, end, recur + 1);
 	}
 
 	private Vector	direction;	// Which way are we going?
