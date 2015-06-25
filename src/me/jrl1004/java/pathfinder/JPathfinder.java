@@ -4,13 +4,13 @@ import org.bukkit.Location;
 
 public class JPathfinder {
 
-	private JPath	directions;
+	private JPath2	directions;
 
 	public JPathfinder(Location start, Location end) {
-		directions = new JPath(start, end, 0, null);
+		directions = new JPath2(start, end);
 	}
 
-	public JPath getPath() {
+	public JPath2 getPath() {
 		return directions;
 	}
 

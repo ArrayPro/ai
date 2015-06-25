@@ -6,6 +6,7 @@ import java.util.Arrays;
 import me.jrl1004.java.pathfinder.main.PathfinderMain;
 
 import org.bukkit.Location;
+import org.bukkit.block.Block;
 import org.bukkit.util.Vector;
 
 public class JPath2 {
@@ -69,10 +70,10 @@ public class JPath2 {
 	}
 
 	private void countBlocksAlongPath() {
-		Location activeBlock = start.clone();
+		Block activeBlock = start.clone().getBlock();
 		magnitude = 0;
-		while (PathfinderMain.safeBlocks.contains(activeBlock.getBlock().getType())) {
-			activeBlock = activeBlock.add(direction);
+		while (PathfinderMain.safeBlocks.contains(activeBlock.getType())) {
+			activeBlock = activeBlock.getRelative(direction.getBlockX(), direction.getBlockY(), direction.getBlockZ());
 			magnitude++;
 		}
 	}
