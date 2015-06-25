@@ -59,6 +59,8 @@ public class PathfinderMain extends JavaPlugin {
         JPathfinder p = new JPathfinder(pl.getLocation().getBlock().getLocation(), b2.getLocation());
 
         JPath2 path = p.getPath();
+        
+        path.start();
 
         final Location[] locations = path.getLocations();
         for (int i = 0; i < locations.length; i++)
