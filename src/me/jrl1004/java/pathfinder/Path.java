@@ -131,17 +131,15 @@ public class Path {
 	}
 
 	private boolean isIntercepted() {
-		if (moves == 0)
-			return true;
-		int freePaths = 5;
 		Block block = localEnd.getBlock();
 		List<BlockFace> arr = Arrays.asList(BlockFace.NORTH, BlockFace.EAST, BlockFace.SOUTH, BlockFace.WEST, BlockFace.UP, BlockFace.DOWN);
-		arr.remove(lastDirection);
+		if (arr.contains(lastDirection))
+			arr.remove(lastDirection);
 		for (BlockFace b : arr) {
-			if (block.getRelative(b).getType() != Material.AIR)
-				freePaths--;
+			if (block.getRelative(b).getType() == Material.AIR)
+				return true;
 		}
-		return freePaths > 0;
+		return false;
 	}
 
 	private boolean isBlocked() {
