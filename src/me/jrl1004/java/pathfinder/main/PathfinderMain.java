@@ -7,6 +7,7 @@ import java.util.Set;
 import me.jrl1004.java.pathfinder.JPath2;
 import me.jrl1004.java.pathfinder.JPathfinder;
 import me.jrl1004.java.pathfinder.silverfish.SilverfishTracker;
+import me.jrl1004.java.pathfinder.swarm.SwarmManager;
 
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -29,9 +30,9 @@ public class PathfinderMain extends JavaPlugin {
     public static final List<Material> safeBlocks = Arrays.asList(Material.AIR, Material.LONG_GRASS, Material.DOUBLE_PLANT, Material.WATER, Material.YELLOW_FLOWER, Material.RED_ROSE, Material.BROWN_MUSHROOM, Material.RED_MUSHROOM);
 
     public void onEnable() {
-        instance = this;
+        instance = this; 
         Bukkit.getPluginManager().registerEvents(new SilverfishTracker(), this);
-        // Bukkit.getPluginManager().registerEvents(new SwarmManager(), this);
+        Bukkit.getPluginManager().registerEvents(new SwarmManager(), this);
     }
 
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
@@ -46,7 +47,7 @@ public class PathfinderMain extends JavaPlugin {
         if (!(sender instanceof Player))
             return false;
 
-        Player pl = (Player) sender;
+        final Player pl = (Player) sender;
 
         Block b = pl.getTargetBlock((Set<Material>) null, 500);
         if (args.length >= 3) {
@@ -63,7 +64,7 @@ public class PathfinderMain extends JavaPlugin {
             
                 JPath2 path = p.getPath();
             
-                Location[] locations = path.getLocations();
+                final Location[] locations = path.getLocations();
                 new BukkitRunnable(){
                     public void run() {
                     for (int i = 0; i < locations.length; i++)

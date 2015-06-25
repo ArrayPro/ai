@@ -67,6 +67,7 @@ public class SwarmManager implements Listener {
 	}
 
 	private void spawnReinforcements(Creature master, int amount) {
+	    if(master == null) return;
 		for (int i = 0; i < amount; i++) {
 			Creature slave = (Creature) master.getWorld().spawnEntity(master.getLocation().add(Math.sin(rand.nextInt(360)), 1, Math.cos(rand.nextInt(360))), master.getType());
 			setMaster(slave, master);
