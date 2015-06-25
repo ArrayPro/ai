@@ -4,3 +4,4 @@ name: Pathfinder
 author: Justin O'Boyle & Jacob Ryan
 commands:
     pathtest: 
+    killall: 
