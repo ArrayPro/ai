@@ -1,4 +1,4 @@
-package me.jrl1004.java.pathfinder.utils.local.vector;
+package me.jrl1004.java.ai.utils.local.vector;
 
 import org.bukkit.util.Vector;
 

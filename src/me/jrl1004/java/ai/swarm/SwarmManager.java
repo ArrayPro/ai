@@ -1,8 +1,8 @@
-package me.jrl1004.java.pathfinder.swarm;
+package me.jrl1004.java.ai.swarm;
 
 import java.util.Random;
 
-import me.jrl1004.java.pathfinder.main.PathfinderMain;
+import me.jrl1004.java.ai.main.PathfinderMain;
 import net.minecraft.server.v1_8_R2.EntityInsentient;
 import net.minecraft.server.v1_8_R2.PathEntity;
 

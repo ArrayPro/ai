@@ -1,4 +1,4 @@
-package me.jrl1004.java.pathfinder.silverfish;
+package me.jrl1004.java.ai.silverfish;
 
 import java.util.Random;
 
