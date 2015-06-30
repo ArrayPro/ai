@@ -1,7 +1,4 @@
-main: me.jrl1004.java.ai.main.PathfinderMain
+main: me.jrl1004.java.pathfinderapi.PathfinderAPI
 version: 1.0.0
 name: Pathfinder
 author: Justin O'Boyle & Jacob Ryan
-commands:
-    pathtest: 
-    killall: 
